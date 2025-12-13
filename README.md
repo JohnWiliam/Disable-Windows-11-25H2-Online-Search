@@ -1,6 +1,6 @@
 # 🔎 Disable Windows 11 25H2 Online Search
-
-[![GitHub downloads](https://img.shields.io/github/downloads/JohnWiliam/Disable-Windows-11-25H2-Online-Search/total?style=for-the-badge&color=green)](https://github.com/JohnWiliam/Disable-Windows-11-25H2-Online-Search/releases/latest) ![Status](https://img.shields.io/badge/Status-Stable-success) ![Platform](https://img.shields.io/badge/Platform-Windows%2011-blue) ![License](https://img.shields.io/badge/License-MIT-green)
+ ![Status](https://img.shields.io/badge/Status-Stable-success) ![Platform](https://img.shields.io/badge/Platform-Windows%2011-blue) ![License](https://img.shields.io/badge/License-MIT-green)
+ [![GitHub downloads](https://img.shields.io/github/downloads/JohnWiliam/Disable-Windows-11-25H2-Online-Search/total?style=for-the-badge&color=green)](https://github.com/JohnWiliam/Disable-Windows-11-25H2-Online-Search/releases/latest)
 
 A modern, portable, and lightweight utility designed to reclaim your privacy by disabling online search integrations in the Windows 11 Start Menu. Built with **C#** and the beautiful **WPF-UI** library, featuring a native **Mica** visual effect.
 
