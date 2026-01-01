@@ -49,7 +49,7 @@ The project is structured for clarity and maintainability:
 
 You don't need to install anything on the target machine to run the app, but to build it from source:
 
-1.  **Prerequisites**: Install the **.NET 8.0 SDK**.
+1.  **Prerequisites**: Install the **.NET 10.0 SDK**.
 2.  **Compile**:
     Run the included batch script:
     ```cmd
@@ -63,9 +63,8 @@ You don't need to install anything on the target machine to run the app, but to 
 
 ## 👥 Credits
 
-*   **Concept & Logic**: Derived from the *OtimizarSearchWin11* PowerShell script.
 *   **Development**: John Wiliam & AI.
-*   **UI Library**: [WPF-UI](https://wpfui.lepo.co/) by Lepoco.
+*   **UI Library**: [WPF-UI](https://wpfui.lepo.co/api/Wpf.Ui.html) by Lepoco.
 
 ---
 
