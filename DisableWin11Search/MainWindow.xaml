@@ -71,16 +71,8 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <ui:Button Grid.Column="0" Content="Aplicar" Appearance="Primary" Click="ApplySuggestions_Click" Margin="0,0,8,0" Height="30" Padding="10,0">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="Checkmark20" />
-                                </ui:Button.Icon>
-                            </ui:Button>
-                            <ui:Button Grid.Column="1" Content="Reverter" Appearance="Secondary" Click="RevertSuggestions_Click" Height="30" Padding="10,0">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="ArrowUndo20" />
-                                </ui:Button.Icon>
-                            </ui:Button>
+                            <ui:Button Grid.Column="0" Content="Aplicar" Appearance="Primary" Click="ApplySuggestions_Click" Margin="0,0,8,0" Height="30" Padding="10,0" Icon="{ui:SymbolIcon Symbol=Checkmark20}" />
+                            <ui:Button Grid.Column="1" Content="Reverter" Appearance="Secondary" Click="RevertSuggestions_Click" Height="30" Padding="10,0" Icon="{ui:SymbolIcon Symbol=ArrowUndo20}" />
                         </Grid>
                     </StackPanel>
                 </ui:CardExpander>
@@ -114,16 +106,8 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <ui:Button Grid.Column="0" Content="Aplicar" Appearance="Primary" Click="ApplyCloud_Click" Margin="0,0,8,0" Height="30" Padding="10,0">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="Checkmark20" />
-                                </ui:Button.Icon>
-                            </ui:Button>
-                            <ui:Button Grid.Column="1" Content="Reverter" Appearance="Secondary" Click="RevertCloud_Click" Height="30" Padding="10,0">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="ArrowUndo20" />
-                                </ui:Button.Icon>
-                            </ui:Button>
+                            <ui:Button Grid.Column="0" Content="Aplicar" Appearance="Primary" Click="ApplyCloud_Click" Margin="0,0,8,0" Height="30" Padding="10,0" Icon="{ui:SymbolIcon Symbol=Checkmark20}" />
+                            <ui:Button Grid.Column="1" Content="Reverter" Appearance="Secondary" Click="RevertCloud_Click" Height="30" Padding="10,0" Icon="{ui:SymbolIcon Symbol=ArrowUndo20}" />
                         </Grid>
                     </StackPanel>
                 </ui:CardExpander>
@@ -157,16 +141,8 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <ui:Button Grid.Column="0" Content="Aplicar" Appearance="Primary" Click="ApplyBing_Click" Margin="0,0,8,0" Height="30" Padding="10,0">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="Checkmark20" />
-                                </ui:Button.Icon>
-                            </ui:Button>
-                            <ui:Button Grid.Column="1" Content="Reverter" Appearance="Secondary" Click="RevertBing_Click" Height="30" Padding="10,0">
-                                <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="ArrowUndo20" />
-                                </ui:Button.Icon>
-                            </ui:Button>
+                            <ui:Button Grid.Column="0" Content="Aplicar" Appearance="Primary" Click="ApplyBing_Click" Margin="0,0,8,0" Height="30" Padding="10,0" Icon="{ui:SymbolIcon Symbol=Checkmark20}" />
+                            <ui:Button Grid.Column="1" Content="Reverter" Appearance="Secondary" Click="RevertBing_Click" Height="30" Padding="10,0" Icon="{ui:SymbolIcon Symbol=ArrowUndo20}" />
                         </Grid>
                     </StackPanel>
                 </ui:CardExpander>
@@ -185,11 +161,7 @@
                     <TextBlock Text="Criado por John Wiliam &amp; AI" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" Content="Reiniciar Explorer" Appearance="Danger" Click="RestartExplorer_Click" Height="30" FontSize="12">
-                    <ui:Button.Icon>
-                        <ui:SymbolIcon Symbol="ArrowClockwise20" />
-                    </ui:Button.Icon>
-                </ui:Button>
+                <ui:Button Grid.Column="1" Content="Reiniciar Explorer" Appearance="Danger" Click="RestartExplorer_Click" Height="30" FontSize="12" Icon="{ui:SymbolIcon Symbol=ArrowClockwise20}" />
             </Grid>
         </Border>
     </Grid>
