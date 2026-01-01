@@ -64,7 +64,7 @@ You don't need to install anything on the target machine to run the app, but to 
 ## 👥 Credits
 
 *   **Development**: John Wiliam & AI.
-*   **UI Library**: [WPF-UI](https://wpfui.lepo.co/) by Lepoco.
+*   **UI Library**: [WPF-UI](https://wpfui.lepo.co/api/Wpf.Ui.html) by Lepoco.
 
 ---
 
