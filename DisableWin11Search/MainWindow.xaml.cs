@@ -10,6 +10,17 @@ public partial class MainWindow : FluentWindow
 {
     private readonly RegistryService _registryService = new();
 
+    // Bolt: Cache frozen brushes to avoid unnecessary allocations on UI updates
+    private static readonly SolidColorBrush SuccessBrush = CreateFrozenBrush(Color.FromRgb(0x0f, 0x7b, 0x0f));
+    private static readonly SolidColorBrush DangerBrush = CreateFrozenBrush(Color.FromRgb(0xc4, 0x2b, 0x1c));
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
+
     public MainWindow()
     {
         InitializeComponent();
@@ -42,10 +53,10 @@ public partial class MainWindow : FluentWindow
         (textBlock.Text, icon.Symbol, icon.Foreground) = status switch
         {
             RegistryService.OptimizationStatus.Optimized =>
-                ("Otimizado", SymbolRegular.CheckmarkCircle24, new SolidColorBrush(Color.FromRgb(0x0f, 0x7b, 0x0f))),
+                ("Otimizado", SymbolRegular.CheckmarkCircle24, SuccessBrush),
 
             RegistryService.OptimizationStatus.NotOptimized =>
-                ("Não Otimizado", SymbolRegular.DismissCircle24, new SolidColorBrush(Color.FromRgb(0xc4, 0x2b, 0x1c))),
+                ("Não Otimizado", SymbolRegular.DismissCircle24, DangerBrush),
 
             _ =>
                 ("Desconhecido", SymbolRegular.QuestionCircle24, Brushes.Gray)

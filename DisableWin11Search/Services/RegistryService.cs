@@ -126,7 +126,9 @@ public class RegistryService
         // Explicitly restart Explorer to avoid blank screen
         try
         {
-             Process.Start("explorer.exe");
+             // Sentinel: Use full path to prevent command hijacking
+             string explorerPath = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows), "explorer.exe");
+             Process.Start(explorerPath);
         }
         catch
         {
