@@ -209,7 +209,7 @@ public partial class MainWindow : FluentWindow
         LanguageOverlay.Visibility = Visibility.Collapsed;
     }
 
-    private static void LanguagePanel_MouseDown(object sender, MouseButtonEventArgs e)
+    private void LanguagePanel_MouseDown(object sender, MouseButtonEventArgs e)
     {
         e.Handled = true;
     }

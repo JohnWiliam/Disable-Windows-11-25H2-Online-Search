@@ -1,3 +1,7 @@
+param(
+    [switch]$NoPause
+)
+
 # Requer privilégios de execução de script
 # Para permitir, execute no terminal: Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
@@ -5,6 +9,12 @@ Write-Host "========================================================" -Foregroun
 Write-Host " Disable Windows 11 Online Search - Build Script (PS)" -ForegroundColor Cyan
 Write-Host "========================================================" -ForegroundColor Cyan
 Write-Host ""
+
+function Wait-BuildPrompt {
+    if (-not $NoPause -and [Environment]::UserInteractive) {
+        Read-Host "Pressione ENTER para fechar..." | Out-Null
+    }
+}
 
 # 1. Definição de Caminhos (Baseado na localização do script)
 $ScriptPath = $PSScriptRoot
@@ -23,8 +33,8 @@ if (-not (Get-Command "dotnet" -ErrorAction SilentlyContinue)) {
     }
     else {
         Write-Host "Erro: O .NET SDK 10 não foi encontrado. Verifique a instalação." -ForegroundColor Red
-        Read-Host "Pressione ENTER para sair..."
-        exit
+        Wait-BuildPrompt
+        exit 1
     }
 }
 else {
@@ -49,6 +59,7 @@ try {
         -p:PublishSingleFile=true `
         -p:IncludeNativeLibrariesForSelfExtract=true `
         -p:EnableCompressionInSingleFile=true `
+        -p:EnableWindowsTargeting=true `
         -o "$OutputDir"
 
     if ($LASTEXITCODE -eq 0) {
@@ -70,4 +81,5 @@ catch {
     Write-Host "========================================================" -ForegroundColor Red
 }
 
-Read-Host "Pressione ENTER para fechar..."
+Wait-BuildPrompt
+exit $LASTEXITCODE

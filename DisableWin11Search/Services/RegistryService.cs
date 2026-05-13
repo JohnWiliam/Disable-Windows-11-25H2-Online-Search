@@ -1,5 +1,6 @@
-using Microsoft.Win32;
 using System.Diagnostics;
+using System.IO;
+using Microsoft.Win32;
 
 namespace DisableWin11Search.Services;
 
@@ -38,14 +39,13 @@ public class RegistryService
 
     public void ApplySearchBoxSuggestions()
     {
-        using var key = Registry.CurrentUser.CreateSubKey(RegPolicy);
-        key?.SetValue("DisableSearchBoxSuggestions", 1, RegistryValueKind.DWord);
+        using var key = CreateCurrentUserSubKey(RegPolicy);
+        key.SetValue("DisableSearchBoxSuggestions", 1, RegistryValueKind.DWord);
     }
 
     public void RevertSearchBoxSuggestions()
     {
-        using var key = Registry.CurrentUser.OpenSubKey(RegPolicy, true);
-        key?.DeleteValue("DisableSearchBoxSuggestions", false);
+        DeleteCurrentUserValue(RegPolicy, "DisableSearchBoxSuggestions");
     }
 
     // 2. DisableCloudSearch
@@ -72,22 +72,19 @@ public class RegistryService
 
     public void ApplyCloudSearch()
     {
-        using var userKey = Registry.CurrentUser.CreateSubKey(RegSearch);
-        userKey?.SetValue("DisableCloudSearch", 1, RegistryValueKind.DWord);
+        using var userKey = CreateCurrentUserSubKey(RegSearch);
+        userKey.SetValue("DisableCloudSearch", 1, RegistryValueKind.DWord);
 
         // Microsoft documents cloud search as a Windows Search policy.
         // Keep the user value for compatibility with existing installs and add the policy-backed value.
-        using var policyKey = Registry.LocalMachine.CreateSubKey(RegWindowsSearchPolicy);
-        policyKey?.SetValue("AllowCloudSearch", 0, RegistryValueKind.DWord);
+        using var policyKey = CreateLocalMachineSubKey(RegWindowsSearchPolicy);
+        policyKey.SetValue("AllowCloudSearch", 0, RegistryValueKind.DWord);
     }
 
     public void RevertCloudSearch()
     {
-        using var userKey = Registry.CurrentUser.OpenSubKey(RegSearch, true);
-        userKey?.DeleteValue("DisableCloudSearch", false);
-
-        using var policyKey = Registry.LocalMachine.OpenSubKey(RegWindowsSearchPolicy, true);
-        policyKey?.DeleteValue("AllowCloudSearch", false);
+        DeleteCurrentUserValue(RegSearch, "DisableCloudSearch");
+        DeleteLocalMachineValue(RegWindowsSearchPolicy, "AllowCloudSearch");
     }
 
     // 3. BingSearchEnabled
@@ -111,14 +108,13 @@ public class RegistryService
 
     public void ApplyBingSearch()
     {
-        using var key = Registry.CurrentUser.CreateSubKey(RegSearch);
-        key?.SetValue("BingSearchEnabled", 0, RegistryValueKind.DWord);
+        using var key = CreateCurrentUserSubKey(RegSearch);
+        key.SetValue("BingSearchEnabled", 0, RegistryValueKind.DWord);
     }
 
     public void RevertBingSearch()
     {
-        using var key = Registry.CurrentUser.OpenSubKey(RegSearch, true);
-        key?.DeleteValue("BingSearchEnabled", false);
+        DeleteCurrentUserValue(RegSearch, "BingSearchEnabled");
     }
 
     // 4. ConnectedSearchUseWeb (Policy)
@@ -142,41 +138,72 @@ public class RegistryService
 
     public void ApplyWebResults()
     {
-        using var key = Registry.LocalMachine.CreateSubKey(RegWindowsSearchPolicy);
-        key?.SetValue("ConnectedSearchUseWeb", 0, RegistryValueKind.DWord);
+        using var key = CreateLocalMachineSubKey(RegWindowsSearchPolicy);
+        key.SetValue("ConnectedSearchUseWeb", 0, RegistryValueKind.DWord);
     }
 
     public void RevertWebResults()
     {
-        using var key = Registry.LocalMachine.OpenSubKey(RegWindowsSearchPolicy, true);
-        key?.DeleteValue("ConnectedSearchUseWeb", false);
+        DeleteLocalMachineValue(RegWindowsSearchPolicy, "ConnectedSearchUseWeb");
     }
 
     public void RestartExplorer()
     {
         foreach (var process in Process.GetProcessesByName("explorer"))
         {
-            try
+            using (process)
             {
-                process.Kill();
+                try
+                {
+                    process.Kill();
+                    process.WaitForExit(milliseconds: 2_000);
+                }
+                catch
+                {
+                    // Ignore if the process has already exited or cannot be killed.
+                }
             }
-            catch { /* Ignore if unable to kill */ }
         }
 
-        // Allow a brief moment for the kill to complete
-        Thread.Sleep(500);
-
-        // Explicitly restart Explorer to avoid blank screen
+        // Explicitly restart Explorer to avoid a blank screen.
         try
         {
-             // Sentinel: Use full path to prevent command hijacking
-             string explorerPath = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows), "explorer.exe");
-             Process.Start(explorerPath);
+            // Use the full path to prevent command hijacking.
+            string explorerPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = explorerPath,
+                UseShellExecute = true
+            });
         }
         catch
         {
-            // If it fails, Windows usually restarts it anyway, or user can do it manually.
-            // We swallow this because sometimes it throws if already started.
+            // If it fails, Windows usually restarts it anyway, or the user can do it manually.
+            // We swallow this because sometimes it throws if Explorer was already restarted.
         }
+    }
+
+    private static RegistryKey CreateCurrentUserSubKey(string subKey)
+    {
+        return Registry.CurrentUser.CreateSubKey(subKey, writable: true)
+            ?? throw new InvalidOperationException($"Could not create or open HKCU\\{subKey}.");
+    }
+
+    private static RegistryKey CreateLocalMachineSubKey(string subKey)
+    {
+        return Registry.LocalMachine.CreateSubKey(subKey, writable: true)
+            ?? throw new InvalidOperationException($"Could not create or open HKLM\\{subKey}.");
+    }
+
+    private static void DeleteCurrentUserValue(string subKey, string valueName)
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(subKey, writable: true);
+        key?.DeleteValue(valueName, throwOnMissingValue: false);
+    }
+
+    private static void DeleteLocalMachineValue(string subKey, string valueName)
+    {
+        using var key = Registry.LocalMachine.OpenSubKey(subKey, writable: true);
+        key?.DeleteValue(valueName, throwOnMissingValue: false);
     }
 }

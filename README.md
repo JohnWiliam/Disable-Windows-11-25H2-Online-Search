@@ -8,7 +8,7 @@ A modern, portable, and lightweight utility designed to reclaim your privacy by 
 
 ## ✨ Features
 
-This tool focuses on three core optimizations to speed up your local search and enhance privacy:
+This tool focuses on four optimizations to speed up your local search and enhance privacy:
 
 *   **🚫 Block Search Suggestions**
     *   *Effect:* Prevents Windows from sending keystrokes to Microsoft as you type in the search box.
@@ -22,6 +22,10 @@ This tool focuses on three core optimizations to speed up your local search and 
     *   *Effect:* Removes web results, news, and trending stories from the Start Menu, ensuring only local files and apps are shown.
     *   *Registry Key:* `HKCU\Software\Microsoft\Windows\CurrentVersion\Search` -> `BingSearchEnabled`
 
+*   **🔒 Disable Windows Search Web Results Policy**
+    *   *Effect:* Applies the machine-wide Windows Search policy that blocks online queries and Internet results.
+    *   *Registry Key:* `HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search` -> `ConnectedSearchUseWeb`
+
 ---
 
 ## 🎨 Visuals & Design
@@ -29,7 +33,7 @@ This tool focuses on three core optimizations to speed up your local search and 
 *   **Mica Backdrop:** Utilizes the desktop wallpaper for a transparent, native Windows 11 feel.
 *   **Compact UI:** Designed to fit perfectly without scrollbars (`720px` width).
 *   **Light Theme:** Enforced clean and bright aesthetics.
-*   **Localized:** Fully translated into **Portuguese (Brazil)** 🇧🇷.
+*   **Localized:** Fully translated into **Portuguese (Brazil)** 🇧🇷 and **English** 🇺🇸.
 
 ---
 
@@ -51,9 +55,13 @@ You don't need to install anything on the target machine to run the app, but to 
 
 1.  **Prerequisites**: Install the **.NET 10.0 SDK**.
 2.  **Compile**:
-    Run the included batch script:
-    ```cmd
-    build.bat
+    Run the included PowerShell build script:
+    ```powershell
+    .\build.ps1
+    ```
+    For non-interactive environments, use:
+    ```powershell
+    .\build.ps1 -NoPause
     ```
 3.  **Output**:
     The portable executable will be generated in the `Build/` folder.

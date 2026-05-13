@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <LangVersion>14.0</LangVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Title>Disable Windows 11 25H2 Online Search</Title>
