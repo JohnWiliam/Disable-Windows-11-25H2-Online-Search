@@ -1,38 +1,39 @@
+using System.Globalization;
 using System.Windows;
 using DisableWin11Search.Services;
-// using Wpf.Ui.Controls; // Removed to avoid ambiguity
 
-namespace DisableWin11Search
+namespace DisableWin11Search;
+
+public partial class App : Application
 {
-    public partial class App : Application
+    private readonly LocalizationService _localizationService = new();
+
+    public App()
     {
-        public App()
-        {
-            // Hook up global exception handling to catch startup crashes
-            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-        }
-
-        private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-        {
-            System.Windows.MessageBox.Show(
-                $"An unhandled UI exception occurred: {e.Exception.Message}\n\nStack Trace:\n{e.Exception.StackTrace}", 
-                "Application Startup Error", 
-                MessageBoxButton.OK, 
-                MessageBoxImage.Error);
-            
-            // Prevent default crash if possible
-            e.Handled = true; 
-        }
-
-        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            Exception? ex = e.ExceptionObject as Exception;
-            System.Windows.MessageBox.Show(
-                $"An unhandled domain exception occurred: {ex?.Message ?? "Unknown Error"}\n\nStack Trace:\n{ex?.StackTrace}", 
-                "Critical Application Error", 
-                MessageBoxButton.OK, 
-                MessageBoxImage.Error);
-        }
+        DispatcherUnhandledException += App_DispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
     }
+
+    private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+        System.Windows.MessageBox.Show(
+            string.Format(CultureInfo.CurrentCulture, T("UiUnhandledExceptionMessage"), e.Exception.Message, e.Exception.StackTrace),
+            T("UiUnhandledExceptionTitle"),
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+
+        e.Handled = true;
+    }
+
+    private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        Exception? ex = e.ExceptionObject as Exception;
+        System.Windows.MessageBox.Show(
+            string.Format(CultureInfo.CurrentCulture, T("DomainUnhandledExceptionMessage"), ex?.Message ?? T("DomainUnhandledUnknown"), ex?.StackTrace),
+            T("DomainUnhandledExceptionTitle"),
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+    }
+
+    private string T(string key) => _localizationService.GetString(key);
 }

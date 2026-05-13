@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>Disable Windows 11 Online Search</value></data>
+  <data name="AppSubtitle" xml:space="preserve"><value>Optimize your privacy and performance</value></data>
+  <data name="SuggestionsTitle" xml:space="preserve"><value>Suggestions Blocking</value></data>
+  <data name="SuggestionsDescription" xml:space="preserve"><value>Prevents what you type in Search from being sent to Microsoft using the official Explorer policy.</value></data>
+  <data name="CloudTitle" xml:space="preserve"><value>Cloud Search Blocking</value></data>
+  <data name="CloudDescription" xml:space="preserve"><value>Disables search for content from your Microsoft account, such as OneDrive, Outlook, and compatible work services.</value></data>
+  <data name="BingTitle" xml:space="preserve"><value>Integrated Bing Blocking</value></data>
+  <data name="BingDescription" xml:space="preserve"><value>Removes web results, news, and Bing answers from the Start menu for the current user.</value></data>
+  <data name="WebResultsTitle" xml:space="preserve"><value>Web Results Blocking</value></data>
+  <data name="WebResultsDescription" xml:space="preserve"><value>Applies the Windows Search policy to prevent online queries and Internet results in Search.</value></data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Revert" xml:space="preserve"><value>Revert</value></data>
+  <data name="ApplyTooltip" xml:space="preserve"><value>Enable this feature block</value></data>
+  <data name="RevertTooltip" xml:space="preserve"><value>Restore the default Windows behavior</value></data>
+  <data name="Checking" xml:space="preserve"><value>Checking...</value></data>
+  <data name="Optimized" xml:space="preserve"><value>Optimized</value></data>
+  <data name="NotOptimized" xml:space="preserve"><value>Not optimized</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Credits" xml:space="preserve"><value>Created by John Wiliam &amp; AI</value></data>
+  <data name="RestartExplorer" xml:space="preserve"><value>Restart Explorer</value></data>
+  <data name="RestartExplorerTooltip" xml:space="preserve"><value>Restarts explorer.exe to apply changes immediately</value></data>
+  <data name="RestartExplorerConfirmTitle" xml:space="preserve"><value>Confirm restart</value></data>
+  <data name="RestartExplorerConfirmMessage" xml:space="preserve"><value>This will close Windows Explorer. The taskbar will disappear briefly.\nDo you want to continue?</value></data>
+  <data name="RestartExplorerSuccessTitle" xml:space="preserve"><value>Success</value></data>
+  <data name="RestartExplorerSuccessMessage" xml:space="preserve"><value>Explorer restarted.</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>Error</value></data>
+  <data name="ErrorMessage" xml:space="preserve"><value>Error: {0}</value></data>
+  <data name="LanguageTooltip" xml:space="preserve"><value>Choose language</value></data>
+  <data name="LanguageDialogTitle" xml:space="preserve"><value>Choose language</value></data>
+  <data name="LanguageDialogDescription" xml:space="preserve"><value>Select the interface language. The change is applied immediately.</value></data>
+  <data name="PortugueseBrazil" xml:space="preserve"><value>Brazilian Portuguese</value></data>
+  <data name="English" xml:space="preserve"><value>English</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="UiUnhandledExceptionMessage" xml:space="preserve"><value>An unhandled UI exception occurred: {0}\n\nStack trace:\n{1}</value></data>
+  <data name="UiUnhandledExceptionTitle" xml:space="preserve"><value>Application startup error</value></data>
+  <data name="DomainUnhandledExceptionMessage" xml:space="preserve"><value>An unhandled domain exception occurred: {0}\n\nStack trace:\n{1}</value></data>
+  <data name="DomainUnhandledUnknown" xml:space="preserve"><value>Unknown error</value></data>
+  <data name="DomainUnhandledExceptionTitle" xml:space="preserve"><value>Critical application error</value></data>
+</root>

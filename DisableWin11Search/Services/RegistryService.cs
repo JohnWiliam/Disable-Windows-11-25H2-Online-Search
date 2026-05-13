@@ -8,6 +8,7 @@ public class RegistryService
     // Registry paths
     private const string RegPolicy = @"Software\Policies\Microsoft\Windows\Explorer";
     private const string RegSearch = @"Software\Microsoft\Windows\CurrentVersion\Search";
+    private const string RegWindowsSearchPolicy = @"SOFTWARE\Policies\Microsoft\Windows\Windows Search";
 
     public enum OptimizationStatus
     {
@@ -53,12 +54,15 @@ public class RegistryService
     {
         try
         {
-            using var key = Registry.CurrentUser.OpenSubKey(RegSearch);
-            if (key?.GetValue("DisableCloudSearch") is int iVal && iVal == 1)
-            {
-                return OptimizationStatus.Optimized;
-            }
-            return OptimizationStatus.NotOptimized;
+            using var userKey = Registry.CurrentUser.OpenSubKey(RegSearch);
+            using var policyKey = Registry.LocalMachine.OpenSubKey(RegWindowsSearchPolicy);
+
+            var hasLegacyUserValue = userKey?.GetValue("DisableCloudSearch") is int userValue && userValue == 1;
+            var hasPolicyValue = policyKey?.GetValue("AllowCloudSearch") is int policyValue && policyValue == 0;
+
+            return hasLegacyUserValue || hasPolicyValue
+                ? OptimizationStatus.Optimized
+                : OptimizationStatus.NotOptimized;
         }
         catch
         {
@@ -68,14 +72,22 @@ public class RegistryService
 
     public void ApplyCloudSearch()
     {
-        using var key = Registry.CurrentUser.CreateSubKey(RegSearch);
-        key?.SetValue("DisableCloudSearch", 1, RegistryValueKind.DWord);
+        using var userKey = Registry.CurrentUser.CreateSubKey(RegSearch);
+        userKey?.SetValue("DisableCloudSearch", 1, RegistryValueKind.DWord);
+
+        // Microsoft documents cloud search as a Windows Search policy.
+        // Keep the user value for compatibility with existing installs and add the policy-backed value.
+        using var policyKey = Registry.LocalMachine.CreateSubKey(RegWindowsSearchPolicy);
+        policyKey?.SetValue("AllowCloudSearch", 0, RegistryValueKind.DWord);
     }
 
     public void RevertCloudSearch()
     {
-        using var key = Registry.CurrentUser.OpenSubKey(RegSearch, true);
-        key?.DeleteValue("DisableCloudSearch", false);
+        using var userKey = Registry.CurrentUser.OpenSubKey(RegSearch, true);
+        userKey?.DeleteValue("DisableCloudSearch", false);
+
+        using var policyKey = Registry.LocalMachine.OpenSubKey(RegWindowsSearchPolicy, true);
+        policyKey?.DeleteValue("AllowCloudSearch", false);
     }
 
     // 3. BingSearchEnabled
@@ -107,6 +119,37 @@ public class RegistryService
     {
         using var key = Registry.CurrentUser.OpenSubKey(RegSearch, true);
         key?.DeleteValue("BingSearchEnabled", false);
+    }
+
+    // 4. ConnectedSearchUseWeb (Policy)
+    // Check: Value == 0 (Optimized)
+    public OptimizationStatus CheckWebResults()
+    {
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(RegWindowsSearchPolicy);
+            if (key?.GetValue("ConnectedSearchUseWeb") is int iVal && iVal == 0)
+            {
+                return OptimizationStatus.Optimized;
+            }
+            return OptimizationStatus.NotOptimized;
+        }
+        catch
+        {
+            return OptimizationStatus.Unknown;
+        }
+    }
+
+    public void ApplyWebResults()
+    {
+        using var key = Registry.LocalMachine.CreateSubKey(RegWindowsSearchPolicy);
+        key?.SetValue("ConnectedSearchUseWeb", 0, RegistryValueKind.DWord);
+    }
+
+    public void RevertWebResults()
+    {
+        using var key = Registry.LocalMachine.OpenSubKey(RegWindowsSearchPolicy, true);
+        key?.DeleteValue("ConnectedSearchUseWeb", false);
     }
 
     public void RestartExplorer()
