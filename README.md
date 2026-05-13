@@ -32,7 +32,7 @@ This tool focuses on four core optimizations to speed up your local search and e
 
 *   **Mica Backdrop:** Utilizes the desktop wallpaper for a transparent, native Windows 11 feel.
 *   **Compact UI:** Designed to fit perfectly without scrollbars (`720px` width).
-*   **Light Theme:** Enforced clean and bright aesthetics.
+*   **Adaptive Theme:** Supports System, Light, and Dark modes while preserving the native Mica look.
 *   **Localized:** Fully translated into **Portuguese (Brazil)** 🇧🇷.
 
 ---

@@ -14,7 +14,16 @@
         WindowStartupLocation="CenterScreen"
         Background="Transparent">
 
-    <Grid Background="#40FFFFFF">
+    <ui:FluentWindow.Resources>
+        <SolidColorBrush x:Key="AppBackdropTintBrush" Color="#40FFFFFF" />
+        <SolidColorBrush x:Key="AppFooterBrush" Color="#99FFFFFF" />
+        <SolidColorBrush x:Key="AppOverlayBrush" Color="#66000000" />
+        <SolidColorBrush x:Key="AppDialogSurfaceBrush" Color="#F2FFFFFF" />
+        <SolidColorBrush x:Key="StatusSuccessBrush" Color="#0F7B0F" />
+        <SolidColorBrush x:Key="StatusDangerBrush" Color="#C42B1C" />
+    </ui:FluentWindow.Resources>
+
+    <Grid x:Name="RootGrid" Background="{DynamicResource AppBackdropTintBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -33,7 +42,7 @@
                     <TextBlock x:Name="HeaderTitleText" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                     <TextBlock x:Name="HeaderSubtitleText" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0" />
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="v1.0.0" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Bottom" />
+                <TextBlock Grid.Column="1" Text="v1.1.0" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Bottom" />
             </Grid>
         </StackPanel>
 
@@ -175,7 +184,7 @@
             </ui:CardExpander>
         </StackPanel>
 
-        <Border Grid.Row="2" Background="#99FFFFFF" Padding="20,15" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}">
+        <Border Grid.Row="2" Background="{DynamicResource AppFooterBrush}" Padding="20,15" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -187,23 +196,47 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <ui:Button x:Name="LanguageButton" Appearance="Secondary" Click="LanguageButton_Click" Height="30" Width="38" Margin="0,0,8,0" Icon="{ui:SymbolIcon Symbol=Globe24}" />
+                    <ui:Button x:Name="SettingsButton" Appearance="Secondary" Click="SettingsButton_Click" Height="30" Width="38" Margin="0,0,8,0" Icon="{ui:SymbolIcon Symbol=Settings24}" />
                     <ui:Button x:Name="RestartExplorerButton" Appearance="Danger" Click="RestartExplorer_Click" Height="30" FontSize="12" Icon="{ui:SymbolIcon Symbol=ArrowClockwise20}" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <Border x:Name="LanguageOverlay" Grid.RowSpan="3" Background="#66000000" Visibility="Collapsed" MouseDown="LanguageOverlay_MouseDown">
-            <Border Width="360" Padding="18" CornerRadius="12" Background="#F2FFFFFF" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="LanguagePanel_MouseDown">
+        <Border x:Name="SettingsOverlay" Grid.RowSpan="3" Background="{DynamicResource AppOverlayBrush}" Visibility="Collapsed" MouseDown="SettingsOverlay_MouseDown">
+            <Border Width="380" Padding="18" CornerRadius="12" Background="{DynamicResource AppDialogSurfaceBrush}" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="SettingsPanel_MouseDown">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <ui:SymbolIcon Symbol="Globe24" FontSize="22" Margin="0,0,8,0" />
-                        <TextBlock x:Name="LanguageDialogTitleText" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        <ui:SymbolIcon Symbol="Settings24" FontSize="22" Margin="0,0,8,0" />
+                        <TextBlock x:Name="SettingsDialogTitleText" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                     </StackPanel>
-                    <TextBlock x:Name="LanguageDialogDescriptionText" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,12" TextWrapping="Wrap" />
+                    <TextBlock x:Name="SettingsDialogDescriptionText" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,14" TextWrapping="Wrap" />
+
+                    <TextBlock x:Name="LanguageSectionTitleText" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8" />
                     <ui:Button x:Name="PortugueseButton" Appearance="Secondary" Click="PortugueseButton_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Margin="0,0,0,8" Icon="{ui:SymbolIcon Symbol=CheckmarkCircle20}" />
-                    <ui:Button x:Name="EnglishButton" Appearance="Secondary" Click="EnglishButton_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Icon="{ui:SymbolIcon Symbol=CheckmarkCircle20}" />
-                    <ui:Button x:Name="CloseLanguageButton" Appearance="Transparent" Click="CloseLanguageButton_Click" HorizontalAlignment="Right" Margin="0,14,0,0" />
+                    <ui:Button x:Name="EnglishButton" Appearance="Secondary" Click="EnglishButton_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Margin="0,0,0,14" Icon="{ui:SymbolIcon Symbol=CheckmarkCircle20}" />
+
+                    <TextBlock x:Name="ThemeSectionTitleText" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8" />
+                    <ui:Button x:Name="ThemeSystemButton" Appearance="Secondary" Click="ThemeSystemButton_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Margin="0,0,0,8" Icon="{ui:SymbolIcon Symbol=CheckmarkCircle20}" />
+                    <ui:Button x:Name="ThemeLightButton" Appearance="Secondary" Click="ThemeLightButton_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Margin="0,0,0,8" Icon="{ui:SymbolIcon Symbol=CheckmarkCircle20}" />
+                    <ui:Button x:Name="ThemeDarkButton" Appearance="Secondary" Click="ThemeDarkButton_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Icon="{ui:SymbolIcon Symbol=CheckmarkCircle20}" />
+
+                    <ui:Button x:Name="CloseSettingsButton" Appearance="Transparent" Click="CloseSettingsButton_Click" HorizontalAlignment="Right" Margin="0,14,0,0" />
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <Border x:Name="RestartExplorerOverlay" Grid.RowSpan="3" Background="{DynamicResource AppOverlayBrush}" Visibility="Collapsed" MouseDown="RestartExplorerOverlay_MouseDown">
+            <Border Width="400" Padding="20" CornerRadius="12" Background="{DynamicResource AppDialogSurfaceBrush}" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="RestartExplorerPanel_MouseDown">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <ui:SymbolIcon Symbol="ArrowClockwise20" FontSize="22" Margin="0,0,8,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        <TextBlock x:Name="RestartExplorerConfirmTitleText" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="RestartExplorerConfirmMessageText" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,18" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <ui:Button x:Name="CancelRestartExplorerButton" Appearance="Secondary" Click="CancelRestartExplorerButton_Click" Margin="0,0,8,0" />
+                        <ui:Button x:Name="ConfirmRestartExplorerButton" Appearance="Danger" Click="ConfirmRestartExplorerButton_Click" Icon="{ui:SymbolIcon Symbol=ArrowClockwise20}" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </Border>
