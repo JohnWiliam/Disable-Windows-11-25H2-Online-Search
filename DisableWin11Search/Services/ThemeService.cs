@@ -12,7 +12,7 @@ public enum AppThemePreference
     Dark
 }
 
-public sealed class ThemeService
+public sealed class ThemeService : IDisposable
 {
     private const string SettingsKeyPath = @"Software\DisableWin11Search";
     private const string ThemeValueName = "Theme";
@@ -29,6 +29,8 @@ public sealed class ThemeService
 
     public AppThemePreference CurrentPreference { get; private set; }
 
+    private bool _disposed;
+
     public event EventHandler? ThemeApplied;
 
     public ThemeService()
@@ -39,6 +41,8 @@ public sealed class ThemeService
 
     public void Apply(Window window)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
         var resolvedTheme = ResolveTheme(CurrentPreference);
         ApplicationThemeManager.Apply(resolvedTheme);
         ApplyWindowBrushes(window, resolvedTheme);
@@ -47,6 +51,8 @@ public sealed class ThemeService
 
     public void ChangeTheme(AppThemePreference preference, Window window)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
         CurrentPreference = preference;
         SaveThemePreference(preference);
         Apply(window);
@@ -60,13 +66,32 @@ public sealed class ThemeService
             return;
         }
 
-        Application.Current?.Dispatcher.Invoke(() =>
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
         {
-            if (Application.Current.MainWindow is Window window)
+            return;
+        }
+
+        dispatcher.BeginInvoke(new Action(() =>
+        {
+            var current = Application.Current;
+            if (!_disposed && current?.MainWindow is Window window)
             {
                 Apply(window);
             }
-        });
+        }));
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+        ThemeApplied = null;
+        _disposed = true;
     }
 
     private static ApplicationTheme ResolveTheme(AppThemePreference preference)
@@ -117,8 +142,15 @@ public sealed class ThemeService
 
     private static void SaveThemePreference(AppThemePreference preference)
     {
-        using var key = Registry.CurrentUser.CreateSubKey(SettingsKeyPath);
-        key?.SetValue(ThemeValueName, preference.ToString(), RegistryValueKind.String);
+        try
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(SettingsKeyPath);
+            key?.SetValue(ThemeValueName, preference.ToString(), RegistryValueKind.String);
+        }
+        catch
+        {
+            // The theme can still be applied for this session if Windows blocks saving preferences.
+        }
     }
 
     private static bool IsSystemLightTheme()

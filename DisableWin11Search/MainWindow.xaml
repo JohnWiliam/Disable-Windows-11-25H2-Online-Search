@@ -7,12 +7,15 @@
         mc:Ignorable="d"
         Title=""
         Height="Auto" Width="720"
+        MinWidth="720" MaxHeight="760"
         SizeToContent="Height"
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
         ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen"
-        Background="Transparent">
+        Background="Transparent"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
 
     <ui:FluentWindow.Resources>
         <SolidColorBrush x:Key="AppBackdropTintBrush" Color="#40FFFFFF" />
@@ -46,7 +49,8 @@
             </Grid>
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Margin="20,5,20,10" VerticalAlignment="Top">
+        <ScrollViewer Grid.Row="1" Margin="20,5,20,10" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel VerticalAlignment="Top">
             <ui:CardExpander IsExpanded="True" Margin="0,0,0,6">
                 <ui:CardExpander.Icon>
                     <ui:SymbolIcon Symbol="Search24" />
@@ -182,7 +186,8 @@
                     </Grid>
                 </StackPanel>
             </ui:CardExpander>
-        </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
 
         <Border Grid.Row="2" Background="{DynamicResource AppFooterBrush}" Padding="20,15" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}">
             <Grid>
@@ -203,7 +208,7 @@
         </Border>
 
         <Border x:Name="SettingsOverlay" Grid.RowSpan="3" Background="{DynamicResource AppOverlayBrush}" Visibility="Collapsed" MouseDown="SettingsOverlay_MouseDown">
-            <Border Width="380" Padding="18" CornerRadius="12" Background="{DynamicResource AppDialogSurfaceBrush}" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="SettingsPanel_MouseDown">
+            <Border Width="380" MaxWidth="620" Padding="18" CornerRadius="12" Background="{DynamicResource AppDialogSurfaceBrush}" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="SettingsPanel_MouseDown">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                         <ui:SymbolIcon Symbol="Settings24" FontSize="22" Margin="0,0,8,0" />
@@ -226,7 +231,7 @@
         </Border>
 
         <Border x:Name="RestartExplorerOverlay" Grid.RowSpan="3" Background="{DynamicResource AppOverlayBrush}" Visibility="Collapsed" MouseDown="RestartExplorerOverlay_MouseDown">
-            <Border Width="400" Padding="20" CornerRadius="12" Background="{DynamicResource AppDialogSurfaceBrush}" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="RestartExplorerPanel_MouseDown">
+            <Border Width="400" MaxWidth="620" Padding="20" CornerRadius="12" Background="{DynamicResource AppDialogSurfaceBrush}" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="RestartExplorerPanel_MouseDown">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                         <ui:SymbolIcon Symbol="ArrowClockwise20" FontSize="22" Margin="0,0,8,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />

@@ -17,7 +17,11 @@ public partial class App : Application
     private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {
         System.Windows.MessageBox.Show(
-            string.Format(CultureInfo.CurrentCulture, T("UiUnhandledExceptionMessage"), e.Exception.Message, e.Exception.StackTrace),
+            string.Format(
+                CultureInfo.CurrentCulture,
+                T("UiUnhandledExceptionMessage"),
+                e.Exception.Message,
+                e.Exception.StackTrace),
             T("UiUnhandledExceptionTitle"),
             MessageBoxButton.OK,
             MessageBoxImage.Error);
@@ -25,11 +29,23 @@ public partial class App : Application
         e.Handled = true;
     }
 
+    protected override void OnExit(ExitEventArgs e)
+    {
+        DispatcherUnhandledException -= App_DispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+
+        base.OnExit(e);
+    }
+
     private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         Exception? ex = e.ExceptionObject as Exception;
         System.Windows.MessageBox.Show(
-            string.Format(CultureInfo.CurrentCulture, T("DomainUnhandledExceptionMessage"), ex?.Message ?? T("DomainUnhandledUnknown"), ex?.StackTrace),
+            string.Format(
+                CultureInfo.CurrentCulture,
+                T("DomainUnhandledExceptionMessage"),
+                ex?.Message ?? T("DomainUnhandledUnknown"),
+                ex?.StackTrace),
             T("DomainUnhandledExceptionTitle"),
             MessageBoxButton.OK,
             MessageBoxImage.Error);

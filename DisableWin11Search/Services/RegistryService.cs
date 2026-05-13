@@ -121,7 +121,7 @@ public class RegistryService
 
         if (File.Exists(explorerPath))
         {
-            Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = explorerPath,
                 UseShellExecute = false

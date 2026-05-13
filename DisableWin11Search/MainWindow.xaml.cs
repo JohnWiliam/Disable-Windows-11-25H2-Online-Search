@@ -14,7 +14,6 @@ public partial class MainWindow : FluentWindow
     private readonly LocalizationService _localizationService = new();
     private readonly ThemeService _themeService = new();
 
-
     public MainWindow()
     {
         InitializeComponent();
@@ -23,6 +22,7 @@ public partial class MainWindow : FluentWindow
         _themeService.Apply(this);
 
         Loaded += MainWindow_Loaded;
+        Closed += MainWindow_Closed;
     }
 
     private void ThemeService_ThemeApplied(object? sender, EventArgs e)
@@ -37,6 +37,14 @@ public partial class MainWindow : FluentWindow
     {
         ApplyLocalization();
         RefreshStatus();
+    }
+
+    private void MainWindow_Closed(object? sender, EventArgs e)
+    {
+        Loaded -= MainWindow_Loaded;
+        Closed -= MainWindow_Closed;
+        _themeService.ThemeApplied -= ThemeService_ThemeApplied;
+        _themeService.Dispose();
     }
 
     private void ApplyLocalization()
@@ -138,50 +146,55 @@ public partial class MainWindow : FluentWindow
 
     private void ApplySuggestions_Click(object sender, RoutedEventArgs e)
     {
-        try { _registryService.ApplySearchBoxSuggestions(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
+        ExecuteRegistryAction(_registryService.ApplySearchBoxSuggestions);
     }
 
     private void RevertSuggestions_Click(object sender, RoutedEventArgs e)
     {
-        try { _registryService.RevertSearchBoxSuggestions(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
+        ExecuteRegistryAction(_registryService.RevertSearchBoxSuggestions);
     }
 
     private void ApplyCloud_Click(object sender, RoutedEventArgs e)
     {
-        try { _registryService.ApplyCloudSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
+        ExecuteRegistryAction(_registryService.ApplyCloudSearch);
     }
 
     private void RevertCloud_Click(object sender, RoutedEventArgs e)
     {
-        try { _registryService.RevertCloudSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
+        ExecuteRegistryAction(_registryService.RevertCloudSearch);
     }
 
     private void ApplyBing_Click(object sender, RoutedEventArgs e)
     {
-        try { _registryService.ApplyBingSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
+        ExecuteRegistryAction(_registryService.ApplyBingSearch);
     }
 
     private void RevertBing_Click(object sender, RoutedEventArgs e)
     {
-        try { _registryService.RevertBingSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
+        ExecuteRegistryAction(_registryService.RevertBingSearch);
     }
 
     private void ApplyWebResults_Click(object sender, RoutedEventArgs e)
     {
-        try { _registryService.ApplyWebResults(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
+        ExecuteRegistryAction(_registryService.ApplyWebResults);
     }
 
     private void RevertWebResults_Click(object sender, RoutedEventArgs e)
     {
-        try { _registryService.RevertWebResults(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
+        ExecuteRegistryAction(_registryService.RevertWebResults);
+    }
+
+    private void ExecuteRegistryAction(Action action)
+    {
+        try
+        {
+            action();
+            RefreshStatus();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
+        }
     }
 
     private void RestartExplorer_Click(object sender, RoutedEventArgs e)
@@ -196,7 +209,11 @@ public partial class MainWindow : FluentWindow
         try
         {
             _registryService.RestartExplorer();
-            System.Windows.MessageBox.Show(T("RestartExplorerSuccessMessage"), T("RestartExplorerSuccessTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(
+                T("RestartExplorerSuccessMessage"),
+                T("RestartExplorerSuccessTitle"),
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
@@ -281,6 +298,10 @@ public partial class MainWindow : FluentWindow
 
     private void ShowError(Exception ex)
     {
-        System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, T("ErrorMessage"), ex.Message), T("ErrorTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        System.Windows.MessageBox.Show(
+            string.Format(CultureInfo.CurrentCulture, T("ErrorMessage"), ex.Message),
+            T("ErrorTitle"),
+            System.Windows.MessageBoxButton.OK,
+            System.Windows.MessageBoxImage.Error);
     }
 }
