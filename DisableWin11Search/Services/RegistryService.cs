@@ -4,7 +4,7 @@ using Microsoft.Win32;
 
 namespace DisableWin11Search.Services;
 
-public class RegistryService
+public sealed class RegistryService
 {
     private const string RegPolicy = @"Software\Policies\Microsoft\Windows\Explorer";
     private const string RegSearch = @"Software\Microsoft\Windows\CurrentVersion\Search";
@@ -121,7 +121,7 @@ public class RegistryService
 
         if (File.Exists(explorerPath))
         {
-            Process.Start(new ProcessStartInfo
+            using var startedProcess = Process.Start(new ProcessStartInfo
             {
                 FileName = explorerPath,
                 UseShellExecute = false

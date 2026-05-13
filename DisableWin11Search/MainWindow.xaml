@@ -240,5 +240,18 @@
                 </StackPanel>
             </Border>
         </Border>
+
+        <Border x:Name="NotificationOverlay" Grid.RowSpan="3" Background="{DynamicResource AppOverlayBrush}" Visibility="Collapsed" MouseDown="NotificationOverlay_MouseDown">
+            <Border Width="400" Padding="20" CornerRadius="12" Background="{DynamicResource AppDialogSurfaceBrush}" BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" MouseDown="NotificationPanel_MouseDown">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <ui:SymbolIcon x:Name="NotificationIcon" Symbol="Info24" FontSize="22" Margin="0,0,8,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        <TextBlock x:Name="NotificationTitleText" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="NotificationMessageText" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,18" TextWrapping="Wrap" />
+                    <ui:Button x:Name="NotificationCloseButton" Appearance="Primary" Click="NotificationCloseButton_Click" HorizontalAlignment="Right" />
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </ui:FluentWindow>

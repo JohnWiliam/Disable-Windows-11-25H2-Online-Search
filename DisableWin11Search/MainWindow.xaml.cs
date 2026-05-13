@@ -14,7 +14,6 @@ public partial class MainWindow : FluentWindow
     private readonly LocalizationService _localizationService = new();
     private readonly ThemeService _themeService = new();
 
-
     public MainWindow()
     {
         InitializeComponent();
@@ -136,53 +135,29 @@ public partial class MainWindow : FluentWindow
         return TryFindResource(key) as Brush ?? Brushes.Gray;
     }
 
-    private void ApplySuggestions_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.ApplySearchBoxSuggestions(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void ApplySuggestions_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.ApplySearchBoxSuggestions);
 
-    private void RevertSuggestions_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.RevertSearchBoxSuggestions(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void RevertSuggestions_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.RevertSearchBoxSuggestions);
 
-    private void ApplyCloud_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.ApplyCloudSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void ApplyCloud_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.ApplyCloudSearch);
 
-    private void RevertCloud_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.RevertCloudSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void RevertCloud_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.RevertCloudSearch);
 
-    private void ApplyBing_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.ApplyBingSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void ApplyBing_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.ApplyBingSearch);
 
-    private void RevertBing_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.RevertBingSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void RevertBing_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.RevertBingSearch);
 
-    private void ApplyWebResults_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.ApplyWebResults(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void ApplyWebResults_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.ApplyWebResults);
 
-    private void RevertWebResults_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.RevertWebResults(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void RevertWebResults_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.RevertWebResults);
 
     private void RestartExplorer_Click(object sender, RoutedEventArgs e)
     {
@@ -196,7 +171,7 @@ public partial class MainWindow : FluentWindow
         try
         {
             _registryService.RestartExplorer();
-            System.Windows.MessageBox.Show(T("RestartExplorerSuccessMessage"), T("RestartExplorerSuccessTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            ShowNotification(T("RestartExplorerSuccessTitle"), T("RestartExplorerSuccessMessage"), SymbolRegular.CheckmarkCircle24, GetThemeBrush("StatusSuccessBrush"));
         }
         catch (Exception ex)
         {
@@ -272,15 +247,76 @@ public partial class MainWindow : FluentWindow
 
     private void ChangeTheme(AppThemePreference preference)
     {
-        _themeService.ChangeTheme(preference, this);
-        RefreshThemeSelection();
-        RefreshStatus();
+        try
+        {
+            _themeService.ChangeTheme(preference, this);
+            RefreshThemeSelection();
+            RefreshStatus();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
+        }
+    }
+
+    private void ExecuteRegistryOperation(Action operation)
+    {
+        try
+        {
+            operation();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
+        }
+        finally
+        {
+            RefreshStatus();
+        }
+    }
+
+    private void ShowError(Exception ex)
+    {
+        ShowNotification(
+            T("ErrorTitle"),
+            string.Format(CultureInfo.CurrentCulture, T("ErrorMessage"), ex.Message),
+            SymbolRegular.DismissCircle24,
+            GetThemeBrush("StatusDangerBrush"));
+    }
+
+    private void ShowNotification(string title, string message, SymbolRegular symbol, Brush iconBrush)
+    {
+        NotificationTitleText.Text = title;
+        NotificationMessageText.Text = message;
+        NotificationIcon.Symbol = symbol;
+        NotificationIcon.Foreground = iconBrush;
+        NotificationCloseButton.Content = T("Close");
+        NotificationOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void NotificationOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        NotificationOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void NotificationPanel_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void NotificationCloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        NotificationOverlay.Visibility = Visibility.Collapsed;
     }
 
     private string T(string key) => _localizationService.GetString(key);
 
-    private void ShowError(Exception ex)
+    protected override void OnClosed(EventArgs e)
     {
-        System.Windows.MessageBox.Show(string.Format(CultureInfo.CurrentCulture, T("ErrorMessage"), ex.Message), T("ErrorTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        Loaded -= MainWindow_Loaded;
+        _themeService.ThemeApplied -= ThemeService_ThemeApplied;
+        _themeService.Dispose();
+
+        base.OnClosed(e);
     }
 }
