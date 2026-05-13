@@ -9,6 +9,11 @@ public sealed class LocalizationService
     private const string SettingsKeyPath = @"Software\DisableWin11Search";
     private const string LanguageValueName = "Language";
     private static readonly string[] SupportedCultures = ["pt-BR", "en-US"];
+    private static readonly IReadOnlyDictionary<string, string> SupportedNeutralCultures = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["pt"] = "pt-BR",
+        ["en"] = "en-US"
+    };
     private readonly ResourceManager _resourceManager = new("DisableWin11Search.Resources.Strings", typeof(LocalizationService).Assembly);
 
     public CultureInfo CurrentCulture { get; private set; }
@@ -29,7 +34,7 @@ public sealed class LocalizationService
     {
         var normalizedCultureName = SupportedCultures.Contains(cultureName, StringComparer.OrdinalIgnoreCase)
             ? SupportedCultures.First(culture => culture.Equals(cultureName, StringComparison.OrdinalIgnoreCase))
-            : "pt-BR";
+            : "en-US";
 
         CurrentCulture = CultureInfo.GetCultureInfo(normalizedCultureName);
         CultureInfo.CurrentCulture = CurrentCulture;
@@ -63,8 +68,14 @@ public sealed class LocalizationService
 
     private static CultureInfo GetBestSystemCulture()
     {
-        return CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.OrdinalIgnoreCase)
-            ? CultureInfo.GetCultureInfo("en-US")
-            : CultureInfo.GetCultureInfo("pt-BR");
+        var systemCulture = CultureInfo.InstalledUICulture;
+        if (SupportedCultures.Contains(systemCulture.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            return CultureInfo.GetCultureInfo(systemCulture.Name);
+        }
+
+        return SupportedNeutralCultures.TryGetValue(systemCulture.TwoLetterISOLanguageName, out var supportedCulture)
+            ? CultureInfo.GetCultureInfo(supportedCulture)
+            : CultureInfo.GetCultureInfo("en-US");
     }
 }

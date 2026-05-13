@@ -12,26 +12,25 @@ public partial class MainWindow : FluentWindow
 {
     private readonly RegistryService _registryService = new();
     private readonly LocalizationService _localizationService = new();
+    private readonly ThemeService _themeService = new();
 
-    // Bolt: Cache frozen brushes to avoid unnecessary allocations on UI updates
-    private static readonly SolidColorBrush SuccessBrush = CreateFrozenBrush(Color.FromRgb(0x0f, 0x7b, 0x0f));
-    private static readonly SolidColorBrush DangerBrush = CreateFrozenBrush(Color.FromRgb(0xc4, 0x2b, 0x1c));
-
-    private static SolidColorBrush CreateFrozenBrush(Color color)
-    {
-        var brush = new SolidColorBrush(color);
-        brush.Freeze();
-        return brush;
-    }
 
     public MainWindow()
     {
         InitializeComponent();
 
-        ApplicationThemeManager.Apply(ApplicationTheme.Light);
-        SystemThemeWatcher.Watch(this, WindowBackdropType.Mica, updateAccents: true);
+        _themeService.ThemeApplied += ThemeService_ThemeApplied;
+        _themeService.Apply(this);
 
         Loaded += MainWindow_Loaded;
+    }
+
+    private void ThemeService_ThemeApplied(object? sender, EventArgs e)
+    {
+        if (IsLoaded)
+        {
+            RefreshStatus();
+        }
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -64,15 +63,26 @@ public partial class MainWindow : FluentWindow
         CreditsText.Text = T("Credits");
         RestartExplorerButton.Content = T("RestartExplorer");
         RestartExplorerButton.ToolTip = T("RestartExplorerTooltip");
-        LanguageButton.ToolTip = T("LanguageTooltip");
+        SettingsButton.ToolTip = T("SettingsTooltip");
 
-        LanguageDialogTitleText.Text = T("LanguageDialogTitle");
-        LanguageDialogDescriptionText.Text = T("LanguageDialogDescription");
+        SettingsDialogTitleText.Text = T("SettingsDialogTitle");
+        SettingsDialogDescriptionText.Text = T("SettingsDialogDescription");
+        LanguageSectionTitleText.Text = T("LanguageSectionTitle");
+        ThemeSectionTitleText.Text = T("ThemeSectionTitle");
         PortugueseButton.Content = T("PortugueseBrazil");
         EnglishButton.Content = T("English");
-        CloseLanguageButton.Content = T("Close");
+        ThemeSystemButton.Content = T("ThemeSystem");
+        ThemeLightButton.Content = T("ThemeLight");
+        ThemeDarkButton.Content = T("ThemeDark");
+        CloseSettingsButton.Content = T("Close");
+
+        RestartExplorerConfirmTitleText.Text = T("RestartExplorerConfirmTitle");
+        RestartExplorerConfirmMessageText.Text = T("RestartExplorerConfirmMessage");
+        CancelRestartExplorerButton.Content = T("Cancel");
+        ConfirmRestartExplorerButton.Content = T("RestartExplorer");
 
         RefreshLanguageSelection();
+        RefreshThemeSelection();
         RefreshStatus();
     }
 
@@ -91,6 +101,13 @@ public partial class MainWindow : FluentWindow
         EnglishButton.Appearance = isPortuguese ? ControlAppearance.Secondary : ControlAppearance.Primary;
     }
 
+    private void RefreshThemeSelection()
+    {
+        ThemeSystemButton.Appearance = _themeService.CurrentPreference == AppThemePreference.System ? ControlAppearance.Primary : ControlAppearance.Secondary;
+        ThemeLightButton.Appearance = _themeService.CurrentPreference == AppThemePreference.Light ? ControlAppearance.Primary : ControlAppearance.Secondary;
+        ThemeDarkButton.Appearance = _themeService.CurrentPreference == AppThemePreference.Dark ? ControlAppearance.Primary : ControlAppearance.Secondary;
+    }
+
     private void RefreshStatus()
     {
         UpdateStatusUI(IconSuggestions, TextSuggestions, _registryService.CheckSearchBoxSuggestions());
@@ -104,14 +121,19 @@ public partial class MainWindow : FluentWindow
         (textBlock.Text, icon.Symbol, icon.Foreground) = status switch
         {
             RegistryService.OptimizationStatus.Optimized =>
-                (T("Optimized"), SymbolRegular.CheckmarkCircle24, SuccessBrush),
+                (T("Optimized"), SymbolRegular.CheckmarkCircle24, GetThemeBrush("StatusSuccessBrush")),
 
             RegistryService.OptimizationStatus.NotOptimized =>
-                (T("NotOptimized"), SymbolRegular.DismissCircle24, DangerBrush),
+                (T("NotOptimized"), SymbolRegular.DismissCircle24, GetThemeBrush("StatusDangerBrush")),
 
             _ =>
                 (T("Unknown"), SymbolRegular.QuestionCircle24, Brushes.Gray)
         };
+    }
+
+    private Brush GetThemeBrush(string key)
+    {
+        return TryFindResource(key) as Brush ?? Brushes.Gray;
     }
 
     private void ApplySuggestions_Click(object sender, RoutedEventArgs e)
@@ -164,29 +186,42 @@ public partial class MainWindow : FluentWindow
 
     private void RestartExplorer_Click(object sender, RoutedEventArgs e)
     {
-        var result = System.Windows.MessageBox.Show(
-            T("RestartExplorerConfirmMessage"),
-            T("RestartExplorerConfirmTitle"),
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+        RestartExplorerOverlay.Visibility = Visibility.Visible;
+    }
 
-        if (result == System.Windows.MessageBoxResult.Yes)
+    private void ConfirmRestartExplorerButton_Click(object sender, RoutedEventArgs e)
+    {
+        RestartExplorerOverlay.Visibility = Visibility.Collapsed;
+
+        try
         {
-            try
-            {
-                _registryService.RestartExplorer();
-                System.Windows.MessageBox.Show(T("RestartExplorerSuccessMessage"), T("RestartExplorerSuccessTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex);
-            }
+            _registryService.RestartExplorer();
+            System.Windows.MessageBox.Show(T("RestartExplorerSuccessMessage"), T("RestartExplorerSuccessTitle"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
         }
     }
 
-    private void LanguageButton_Click(object sender, RoutedEventArgs e)
+    private void CancelRestartExplorerButton_Click(object sender, RoutedEventArgs e)
     {
-        LanguageOverlay.Visibility = Visibility.Visible;
+        RestartExplorerOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void RestartExplorerOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        RestartExplorerOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void RestartExplorerPanel_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void SettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        SettingsOverlay.Visibility = Visibility.Visible;
     }
 
     private void PortugueseButton_Click(object sender, RoutedEventArgs e)
@@ -199,17 +234,17 @@ public partial class MainWindow : FluentWindow
         ChangeLanguage("en-US");
     }
 
-    private void CloseLanguageButton_Click(object sender, RoutedEventArgs e)
+    private void CloseSettingsButton_Click(object sender, RoutedEventArgs e)
     {
-        LanguageOverlay.Visibility = Visibility.Collapsed;
+        SettingsOverlay.Visibility = Visibility.Collapsed;
     }
 
-    private void LanguageOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+    private void SettingsOverlay_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        LanguageOverlay.Visibility = Visibility.Collapsed;
+        SettingsOverlay.Visibility = Visibility.Collapsed;
     }
 
-    private void LanguagePanel_MouseDown(object sender, MouseButtonEventArgs e)
+    private void SettingsPanel_MouseDown(object sender, MouseButtonEventArgs e)
     {
         e.Handled = true;
     }
@@ -218,6 +253,28 @@ public partial class MainWindow : FluentWindow
     {
         _localizationService.ApplyCulture(cultureName);
         ApplyLocalization();
+    }
+
+    private void ThemeSystemButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeTheme(AppThemePreference.System);
+    }
+
+    private void ThemeLightButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeTheme(AppThemePreference.Light);
+    }
+
+    private void ThemeDarkButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeTheme(AppThemePreference.Dark);
+    }
+
+    private void ChangeTheme(AppThemePreference preference)
+    {
+        _themeService.ChangeTheme(preference, this);
+        RefreshThemeSelection();
+        RefreshStatus();
     }
 
     private string T(string key) => _localizationService.GetString(key);

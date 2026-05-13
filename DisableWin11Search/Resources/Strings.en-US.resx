@@ -31,6 +31,15 @@
   <data name="RestartExplorerSuccessMessage" xml:space="preserve"><value>Explorer restarted.</value></data>
   <data name="ErrorTitle" xml:space="preserve"><value>Error</value></data>
   <data name="ErrorMessage" xml:space="preserve"><value>Error: {0}</value></data>
+  <data name="SettingsTooltip" xml:space="preserve"><value>Open settings</value></data>
+  <data name="SettingsDialogTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsDialogDescription" xml:space="preserve"><value>Adjust the interface language and theme. Changes are applied immediately.</value></data>
+  <data name="LanguageSectionTitle" xml:space="preserve"><value>Language</value></data>
+  <data name="ThemeSectionTitle" xml:space="preserve"><value>Theme</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>System</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="LanguageTooltip" xml:space="preserve"><value>Choose language</value></data>
   <data name="LanguageDialogTitle" xml:space="preserve"><value>Choose language</value></data>
   <data name="LanguageDialogDescription" xml:space="preserve"><value>Select the interface language. The change is applied immediately.</value></data>
