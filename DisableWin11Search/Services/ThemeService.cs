@@ -12,7 +12,7 @@ public enum AppThemePreference
     Dark
 }
 
-public sealed class ThemeService
+public sealed class ThemeService : IDisposable
 {
     private const string SettingsKeyPath = @"Software\DisableWin11Search";
     private const string ThemeValueName = "Theme";
@@ -27,6 +27,8 @@ public sealed class ThemeService
             [nameof(AppThemePreference.Dark)] = AppThemePreference.Dark
         };
 
+    private bool _disposed;
+
     public AppThemePreference CurrentPreference { get; private set; }
 
     public event EventHandler? ThemeApplied;
@@ -39,6 +41,8 @@ public sealed class ThemeService
 
     public void Apply(Window window)
     {
+        ThrowIfDisposed();
+
         var resolvedTheme = ResolveTheme(CurrentPreference);
         ApplicationThemeManager.Apply(resolvedTheme);
         ApplyWindowBrushes(window, resolvedTheme);
@@ -47,26 +51,53 @@ public sealed class ThemeService
 
     public void ChangeTheme(AppThemePreference preference, Window window)
     {
+        ThrowIfDisposed();
+
         CurrentPreference = preference;
         SaveThemePreference(preference);
         Apply(window);
     }
 
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+        ThemeApplied = null;
+        _disposed = true;
+        GC.SuppressFinalize(this);
+    }
+
     private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
     {
-        if (CurrentPreference != AppThemePreference.System ||
+        if (_disposed ||
+            CurrentPreference != AppThemePreference.System ||
             e.Category is not (UserPreferenceCategory.General or UserPreferenceCategory.VisualStyle))
         {
             return;
         }
 
-        Application.Current?.Dispatcher.Invoke(() =>
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
         {
-            if (Application.Current.MainWindow is Window window)
+            return;
+        }
+
+        dispatcher.BeginInvoke((Action)(() =>
+        {
+            if (!_disposed && Application.Current?.MainWindow is Window window)
             {
                 Apply(window);
             }
-        });
+        }));
+    }
+
+    private void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     private static ApplicationTheme ResolveTheme(AppThemePreference preference)
