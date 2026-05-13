@@ -36,6 +36,15 @@
   <data name="LanguageDialogDescription" xml:space="preserve"><value>Selecione o idioma da interface. A alteração é aplicada imediatamente.</value></data>
   <data name="PortugueseBrazil" xml:space="preserve"><value>Português Brasileiro</value></data>
   <data name="English" xml:space="preserve"><value>Inglês</value></data>
+  <data name="SettingsTooltip" xml:space="preserve"><value>Configurações</value></data>
+  <data name="SettingsDialogTitle" xml:space="preserve"><value>Configurações</value></data>
+  <data name="SettingsDialogDescription" xml:space="preserve"><value>Personalize o idioma e o tema da interface. As alterações são aplicadas imediatamente.</value></data>
+  <data name="LanguageSectionTitle" xml:space="preserve"><value>Idioma</value></data>
+  <data name="ThemeSectionTitle" xml:space="preserve"><value>Tema</value></data>
+  <data name="SystemTheme" xml:space="preserve"><value>Sistema</value></data>
+  <data name="LightTheme" xml:space="preserve"><value>Claro</value></data>
+  <data name="DarkTheme" xml:space="preserve"><value>Escuro</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
   <data name="Close" xml:space="preserve"><value>Fechar</value></data>
   <data name="UiUnhandledExceptionMessage" xml:space="preserve"><value>Ocorreu uma exceção não tratada na interface: {0}\n\nRastreamento de pilha:\n{1}</value></data>
   <data name="UiUnhandledExceptionTitle" xml:space="preserve"><value>Erro de inicialização do aplicativo</value></data>

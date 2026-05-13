@@ -11,11 +11,13 @@ public sealed class LocalizationService
     private static readonly string[] SupportedCultures = ["pt-BR", "en-US"];
     private readonly ResourceManager _resourceManager = new("DisableWin11Search.Resources.Strings", typeof(LocalizationService).Assembly);
 
-    public CultureInfo CurrentCulture { get; private set; }
+    private static CultureInfo? s_currentCulture;
+
+    public CultureInfo CurrentCulture => s_currentCulture ?? CultureInfo.GetCultureInfo("en-US");
 
     public LocalizationService()
     {
-        CurrentCulture = GetSavedCulture() ?? GetBestSystemCulture();
+        s_currentCulture ??= GetSavedCulture() ?? GetBestSystemCulture();
         ApplyCulture(CurrentCulture.Name, save: false);
     }
 
@@ -29,9 +31,9 @@ public sealed class LocalizationService
     {
         var normalizedCultureName = SupportedCultures.Contains(cultureName, StringComparer.OrdinalIgnoreCase)
             ? SupportedCultures.First(culture => culture.Equals(cultureName, StringComparison.OrdinalIgnoreCase))
-            : "pt-BR";
+            : "en-US";
 
-        CurrentCulture = CultureInfo.GetCultureInfo(normalizedCultureName);
+        s_currentCulture = CultureInfo.GetCultureInfo(normalizedCultureName);
         CultureInfo.CurrentCulture = CurrentCulture;
         CultureInfo.CurrentUICulture = CurrentCulture;
 
@@ -63,8 +65,10 @@ public sealed class LocalizationService
 
     private static CultureInfo GetBestSystemCulture()
     {
-        return CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.OrdinalIgnoreCase)
-            ? CultureInfo.GetCultureInfo("en-US")
-            : CultureInfo.GetCultureInfo("pt-BR");
+        var systemLanguage = CultureInfo.InstalledUICulture.TwoLetterISOLanguageName;
+
+        return systemLanguage.Equals("pt", StringComparison.OrdinalIgnoreCase)
+            ? CultureInfo.GetCultureInfo("pt-BR")
+            : CultureInfo.GetCultureInfo("en-US");
     }
 }

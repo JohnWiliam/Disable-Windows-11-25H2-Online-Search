@@ -10,7 +10,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Title>Disable Windows 11 25H2 Online Search</Title>
     <Authors>John Wiliam &amp; AI</Authors>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Description>Ferramenta para otimizar a pesquisa do Windows 11.</Description>
     <ApplicationIcon>app.ico</ApplicationIcon>
     

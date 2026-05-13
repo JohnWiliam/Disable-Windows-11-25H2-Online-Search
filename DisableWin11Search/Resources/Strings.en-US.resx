@@ -36,6 +36,15 @@
   <data name="LanguageDialogDescription" xml:space="preserve"><value>Select the interface language. The change is applied immediately.</value></data>
   <data name="PortugueseBrazil" xml:space="preserve"><value>Brazilian Portuguese</value></data>
   <data name="English" xml:space="preserve"><value>English</value></data>
+  <data name="SettingsTooltip" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsDialogTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsDialogDescription" xml:space="preserve"><value>Customize the interface language and theme. Changes are applied immediately.</value></data>
+  <data name="LanguageSectionTitle" xml:space="preserve"><value>Language</value></data>
+  <data name="ThemeSectionTitle" xml:space="preserve"><value>Theme</value></data>
+  <data name="SystemTheme" xml:space="preserve"><value>System</value></data>
+  <data name="LightTheme" xml:space="preserve"><value>Light</value></data>
+  <data name="DarkTheme" xml:space="preserve"><value>Dark</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Close" xml:space="preserve"><value>Close</value></data>
   <data name="UiUnhandledExceptionMessage" xml:space="preserve"><value>An unhandled UI exception occurred: {0}\n\nStack trace:\n{1}</value></data>
   <data name="UiUnhandledExceptionTitle" xml:space="preserve"><value>Application startup error</value></data>
