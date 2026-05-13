@@ -8,7 +8,7 @@ A modern, portable, and lightweight utility designed to reclaim your privacy by 
 
 ## ✨ Features
 
-This tool focuses on three core optimizations to speed up your local search and enhance privacy:
+This tool focuses on four core optimizations to speed up your local search and enhance privacy:
 
 *   **🚫 Block Search Suggestions**
     *   *Effect:* Prevents Windows from sending keystrokes to Microsoft as you type in the search box.
@@ -16,11 +16,15 @@ This tool focuses on three core optimizations to speed up your local search and 
 
 *   **☁️ Disable Cloud Search**
     *   *Effect:* Stops the search menu from fetching content from your OneDrive, Outlook, and other Microsoft account services.
-    *   *Registry Key:* `HKCU\Software\Microsoft\Windows\CurrentVersion\Search` -> `DisableCloudSearch`
+    *   *Registry Keys:* `HKCU\Software\Microsoft\Windows\CurrentVersion\Search` -> `DisableCloudSearch` and `HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search` -> `AllowCloudSearch`
 
 *   **🌐 Remove Bing Integration**
     *   *Effect:* Removes web results, news, and trending stories from the Start Menu, ensuring only local files and apps are shown.
     *   *Registry Key:* `HKCU\Software\Microsoft\Windows\CurrentVersion\Search` -> `BingSearchEnabled`
+
+*   **🌍 Block Web Results Policy**
+    *   *Effect:* Applies the Windows Search policy that disables web queries in Search.
+    *   *Registry Key:* `HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search` -> `ConnectedSearchUseWeb`
 
 ---
 
@@ -51,9 +55,13 @@ You don't need to install anything on the target machine to run the app, but to 
 
 1.  **Prerequisites**: Install the **.NET 10.0 SDK**.
 2.  **Compile**:
-    Run the included batch script:
-    ```cmd
-    build.bat
+    Run the included PowerShell script from the repository root:
+    ```powershell
+    .\build.ps1
+    ```
+    For automated terminals, use:
+    ```powershell
+    .\build.ps1 -NoPause
     ```
 3.  **Output**:
     The portable executable will be generated in the `Build/` folder.
