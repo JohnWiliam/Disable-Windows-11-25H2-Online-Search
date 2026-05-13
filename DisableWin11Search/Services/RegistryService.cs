@@ -1,13 +1,14 @@
-using Microsoft.Win32;
 using System.Diagnostics;
+using System.IO;
+using Microsoft.Win32;
 
 namespace DisableWin11Search.Services;
 
-public class RegistryService
+public sealed class RegistryService
 {
-    // Registry paths
     private const string RegPolicy = @"Software\Policies\Microsoft\Windows\Explorer";
     private const string RegSearch = @"Software\Microsoft\Windows\CurrentVersion\Search";
+    private const string RegWindowsSearchPolicy = @"SOFTWARE\Policies\Microsoft\Windows\Windows Search";
 
     public enum OptimizationStatus
     {
@@ -16,49 +17,34 @@ public class RegistryService
         Unknown
     }
 
-    // 1. DisableSearchBoxSuggestions (Policy)
-    // Check: Value == 1 (Optimized)
     public OptimizationStatus CheckSearchBoxSuggestions()
     {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(RegPolicy);
-            if (key?.GetValue("DisableSearchBoxSuggestions") is int iVal && iVal == 1)
-            {
-                return OptimizationStatus.Optimized;
-            }
-            return OptimizationStatus.NotOptimized;
-        }
-        catch
-        {
-            return OptimizationStatus.Unknown;
-        }
+        return CheckDWordValue(Registry.CurrentUser, RegPolicy, "DisableSearchBoxSuggestions", 1);
     }
 
     public void ApplySearchBoxSuggestions()
     {
-        using var key = Registry.CurrentUser.CreateSubKey(RegPolicy);
-        key?.SetValue("DisableSearchBoxSuggestions", 1, RegistryValueKind.DWord);
+        SetDWordValue(Registry.CurrentUser, RegPolicy, "DisableSearchBoxSuggestions", 1);
     }
 
     public void RevertSearchBoxSuggestions()
     {
-        using var key = Registry.CurrentUser.OpenSubKey(RegPolicy, true);
-        key?.DeleteValue("DisableSearchBoxSuggestions", false);
+        DeleteValue(Registry.CurrentUser, RegPolicy, "DisableSearchBoxSuggestions");
     }
 
-    // 2. DisableCloudSearch
-    // Check: Value == 1 (Optimized)
     public OptimizationStatus CheckCloudSearch()
     {
         try
         {
-            using var key = Registry.CurrentUser.OpenSubKey(RegSearch);
-            if (key?.GetValue("DisableCloudSearch") is int iVal && iVal == 1)
-            {
-                return OptimizationStatus.Optimized;
-            }
-            return OptimizationStatus.NotOptimized;
+            using var userKey = Registry.CurrentUser.OpenSubKey(RegSearch);
+            using var policyKey = Registry.LocalMachine.OpenSubKey(RegWindowsSearchPolicy);
+
+            var hasLegacyUserValue = IsDWordValue(userKey, "DisableCloudSearch", 1);
+            var hasPolicyValue = IsDWordValue(policyKey, "AllowCloudSearch", 0);
+
+            return hasLegacyUserValue || hasPolicyValue
+                ? OptimizationStatus.Optimized
+                : OptimizationStatus.NotOptimized;
         }
         catch
         {
@@ -68,28 +54,89 @@ public class RegistryService
 
     public void ApplyCloudSearch()
     {
-        using var key = Registry.CurrentUser.CreateSubKey(RegSearch);
-        key?.SetValue("DisableCloudSearch", 1, RegistryValueKind.DWord);
+        SetDWordValue(Registry.CurrentUser, RegSearch, "DisableCloudSearch", 1);
+
+        // Microsoft documents cloud search as a Windows Search policy.
+        // Keep the user value for compatibility with existing installs and add the policy-backed value.
+        SetDWordValue(Registry.LocalMachine, RegWindowsSearchPolicy, "AllowCloudSearch", 0);
     }
 
     public void RevertCloudSearch()
     {
-        using var key = Registry.CurrentUser.OpenSubKey(RegSearch, true);
-        key?.DeleteValue("DisableCloudSearch", false);
+        DeleteValue(Registry.CurrentUser, RegSearch, "DisableCloudSearch");
+        DeleteValue(Registry.LocalMachine, RegWindowsSearchPolicy, "AllowCloudSearch");
     }
 
-    // 3. BingSearchEnabled
-    // Check: Value == 0 (Optimized)
     public OptimizationStatus CheckBingSearch()
+    {
+        return CheckDWordValue(Registry.CurrentUser, RegSearch, "BingSearchEnabled", 0);
+    }
+
+    public void ApplyBingSearch()
+    {
+        SetDWordValue(Registry.CurrentUser, RegSearch, "BingSearchEnabled", 0);
+    }
+
+    public void RevertBingSearch()
+    {
+        DeleteValue(Registry.CurrentUser, RegSearch, "BingSearchEnabled");
+    }
+
+    public OptimizationStatus CheckWebResults()
+    {
+        return CheckDWordValue(Registry.LocalMachine, RegWindowsSearchPolicy, "ConnectedSearchUseWeb", 0);
+    }
+
+    public void ApplyWebResults()
+    {
+        SetDWordValue(Registry.LocalMachine, RegWindowsSearchPolicy, "ConnectedSearchUseWeb", 0);
+    }
+
+    public void RevertWebResults()
+    {
+        DeleteValue(Registry.LocalMachine, RegWindowsSearchPolicy, "ConnectedSearchUseWeb");
+    }
+
+    public void RestartExplorer()
+    {
+        foreach (var process in Process.GetProcessesByName("explorer"))
+        {
+            using (process)
+            {
+                try
+                {
+                    process.Kill();
+                    process.WaitForExit(3000);
+                }
+                catch
+                {
+                    // Ignore processes that exited between enumeration and Kill, or that Windows denied.
+                }
+            }
+        }
+
+        var explorerPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+            "explorer.exe");
+
+        if (File.Exists(explorerPath))
+        {
+            using var startedProcess = Process.Start(new ProcessStartInfo
+            {
+                FileName = explorerPath,
+                UseShellExecute = false
+            });
+        }
+    }
+
+    private static OptimizationStatus CheckDWordValue(RegistryKey rootKey, string subKeyName, string valueName, int optimizedValue)
     {
         try
         {
-            using var key = Registry.CurrentUser.OpenSubKey(RegSearch);
-            if (key?.GetValue("BingSearchEnabled") is int iVal && iVal == 0)
-            {
-                return OptimizationStatus.Optimized;
-            }
-            return OptimizationStatus.NotOptimized;
+            using var key = rootKey.OpenSubKey(subKeyName);
+            return IsDWordValue(key, valueName, optimizedValue)
+                ? OptimizationStatus.Optimized
+                : OptimizationStatus.NotOptimized;
         }
         catch
         {
@@ -97,43 +144,22 @@ public class RegistryService
         }
     }
 
-    public void ApplyBingSearch()
+    private static bool IsDWordValue(RegistryKey? key, string valueName, int expectedValue)
     {
-        using var key = Registry.CurrentUser.CreateSubKey(RegSearch);
-        key?.SetValue("BingSearchEnabled", 0, RegistryValueKind.DWord);
+        return key?.GetValue(valueName) is int value && value == expectedValue;
     }
 
-    public void RevertBingSearch()
+    private static void SetDWordValue(RegistryKey rootKey, string subKeyName, string valueName, int value)
     {
-        using var key = Registry.CurrentUser.OpenSubKey(RegSearch, true);
-        key?.DeleteValue("BingSearchEnabled", false);
+        using var key = rootKey.CreateSubKey(subKeyName, writable: true)
+            ?? throw new InvalidOperationException($"Unable to create or open registry key: {rootKey.Name}\\{subKeyName}");
+
+        key.SetValue(valueName, value, RegistryValueKind.DWord);
     }
 
-    public void RestartExplorer()
+    private static void DeleteValue(RegistryKey rootKey, string subKeyName, string valueName)
     {
-        foreach (var process in Process.GetProcessesByName("explorer"))
-        {
-            try
-            {
-                process.Kill();
-            }
-            catch { /* Ignore if unable to kill */ }
-        }
-
-        // Allow a brief moment for the kill to complete
-        Thread.Sleep(500);
-
-        // Explicitly restart Explorer to avoid blank screen
-        try
-        {
-             // Sentinel: Use full path to prevent command hijacking
-             string explorerPath = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows), "explorer.exe");
-             Process.Start(explorerPath);
-        }
-        catch
-        {
-            // If it fails, Windows usually restarts it anyway, or user can do it manually.
-            // We swallow this because sometimes it throws if already started.
-        }
+        using var key = rootKey.OpenSubKey(subKeyName, writable: true);
+        key?.DeleteValue(valueName, throwOnMissingValue: false);
     }
 }

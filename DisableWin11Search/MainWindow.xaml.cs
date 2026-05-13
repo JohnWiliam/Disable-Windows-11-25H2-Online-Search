@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using DisableWin11Search.Services;
 using Wpf.Ui.Appearance;
@@ -9,31 +11,100 @@ namespace DisableWin11Search;
 public partial class MainWindow : FluentWindow
 {
     private readonly RegistryService _registryService = new();
-
-    // Bolt: Cache frozen brushes to avoid unnecessary allocations on UI updates
-    private static readonly SolidColorBrush SuccessBrush = CreateFrozenBrush(Color.FromRgb(0x0f, 0x7b, 0x0f));
-    private static readonly SolidColorBrush DangerBrush = CreateFrozenBrush(Color.FromRgb(0xc4, 0x2b, 0x1c));
-
-    private static SolidColorBrush CreateFrozenBrush(Color color)
-    {
-        var brush = new SolidColorBrush(color);
-        brush.Freeze();
-        return brush;
-    }
+    private readonly LocalizationService _localizationService = new();
+    private readonly ThemeService _themeService = new();
 
     public MainWindow()
     {
         InitializeComponent();
 
-        // Force Light Theme
-        ApplicationThemeManager.Apply(ApplicationTheme.Light);
+        _themeService.ThemeApplied += ThemeService_ThemeApplied;
+        _themeService.Apply(this);
 
         Loaded += MainWindow_Loaded;
     }
 
+    private void ThemeService_ThemeApplied(object? sender, EventArgs e)
+    {
+        if (IsLoaded)
+        {
+            RefreshStatus();
+        }
+    }
+
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyLocalization();
         RefreshStatus();
+    }
+
+    private void ApplyLocalization()
+    {
+        Title = T("AppTitle");
+        AppTitleBar.Title = string.Empty;
+        HeaderTitleText.Text = T("AppTitle");
+        HeaderSubtitleText.Text = T("AppSubtitle");
+
+        SuggestionsTitleText.Text = T("SuggestionsTitle");
+        SuggestionsDescriptionText.Text = T("SuggestionsDescription");
+        CloudTitleText.Text = T("CloudTitle");
+        CloudDescriptionText.Text = T("CloudDescription");
+        BingTitleText.Text = T("BingTitle");
+        BingDescriptionText.Text = T("BingDescription");
+        WebResultsTitleText.Text = T("WebResultsTitle");
+        WebResultsDescriptionText.Text = T("WebResultsDescription");
+
+        SetActionButtonText(ApplySuggestionsButton, RevertSuggestionsButton);
+        SetActionButtonText(ApplyCloudButton, RevertCloudButton);
+        SetActionButtonText(ApplyBingButton, RevertBingButton);
+        SetActionButtonText(ApplyWebResultsButton, RevertWebResultsButton);
+
+        CreditsText.Text = T("Credits");
+        RestartExplorerButton.Content = T("RestartExplorer");
+        RestartExplorerButton.ToolTip = T("RestartExplorerTooltip");
+        SettingsButton.ToolTip = T("SettingsTooltip");
+
+        SettingsDialogTitleText.Text = T("SettingsDialogTitle");
+        SettingsDialogDescriptionText.Text = T("SettingsDialogDescription");
+        LanguageSectionTitleText.Text = T("LanguageSectionTitle");
+        ThemeSectionTitleText.Text = T("ThemeSectionTitle");
+        PortugueseButton.Content = T("PortugueseBrazil");
+        EnglishButton.Content = T("English");
+        ThemeSystemButton.Content = T("ThemeSystem");
+        ThemeLightButton.Content = T("ThemeLight");
+        ThemeDarkButton.Content = T("ThemeDark");
+        CloseSettingsButton.Content = T("Close");
+
+        RestartExplorerConfirmTitleText.Text = T("RestartExplorerConfirmTitle");
+        RestartExplorerConfirmMessageText.Text = T("RestartExplorerConfirmMessage");
+        CancelRestartExplorerButton.Content = T("Cancel");
+        ConfirmRestartExplorerButton.Content = T("RestartExplorer");
+
+        RefreshLanguageSelection();
+        RefreshThemeSelection();
+        RefreshStatus();
+    }
+
+    private void SetActionButtonText(System.Windows.Controls.Button applyButton, System.Windows.Controls.Button revertButton)
+    {
+        applyButton.Content = T("Apply");
+        applyButton.ToolTip = T("ApplyTooltip");
+        revertButton.Content = T("Revert");
+        revertButton.ToolTip = T("RevertTooltip");
+    }
+
+    private void RefreshLanguageSelection()
+    {
+        var isPortuguese = _localizationService.CurrentCulture.Name.Equals("pt-BR", StringComparison.OrdinalIgnoreCase);
+        PortugueseButton.Appearance = isPortuguese ? ControlAppearance.Primary : ControlAppearance.Secondary;
+        EnglishButton.Appearance = isPortuguese ? ControlAppearance.Secondary : ControlAppearance.Primary;
+    }
+
+    private void RefreshThemeSelection()
+    {
+        ThemeSystemButton.Appearance = _themeService.CurrentPreference == AppThemePreference.System ? ControlAppearance.Primary : ControlAppearance.Secondary;
+        ThemeLightButton.Appearance = _themeService.CurrentPreference == AppThemePreference.Light ? ControlAppearance.Primary : ControlAppearance.Secondary;
+        ThemeDarkButton.Appearance = _themeService.CurrentPreference == AppThemePreference.Dark ? ControlAppearance.Primary : ControlAppearance.Secondary;
     }
 
     private void RefreshStatus()
@@ -41,88 +112,211 @@ public partial class MainWindow : FluentWindow
         UpdateStatusUI(IconSuggestions, TextSuggestions, _registryService.CheckSearchBoxSuggestions());
         UpdateStatusUI(IconCloud, TextCloud, _registryService.CheckCloudSearch());
         UpdateStatusUI(IconBing, TextBing, _registryService.CheckBingSearch());
+        UpdateStatusUI(IconWebResults, TextWebResults, _registryService.CheckWebResults());
     }
 
-    private static void UpdateStatusUI(SymbolIcon icon, System.Windows.Controls.TextBlock textBlock, RegistryService.OptimizationStatus status)
+    private void UpdateStatusUI(SymbolIcon icon, System.Windows.Controls.TextBlock textBlock, RegistryService.OptimizationStatus status)
     {
-        // Colors using System.Windows.Media.Brushes
-        // Success: #00cc6a (Green)
-        // Danger: #e81123 (Red)
-        // Caution: #fce100 (Yellow/Gold) or #ffb900
-
         (textBlock.Text, icon.Symbol, icon.Foreground) = status switch
         {
             RegistryService.OptimizationStatus.Optimized =>
-                ("Otimizado", SymbolRegular.CheckmarkCircle24, SuccessBrush),
+                (T("Optimized"), SymbolRegular.CheckmarkCircle24, GetThemeBrush("StatusSuccessBrush")),
 
             RegistryService.OptimizationStatus.NotOptimized =>
-                ("Não Otimizado", SymbolRegular.DismissCircle24, DangerBrush),
+                (T("NotOptimized"), SymbolRegular.DismissCircle24, GetThemeBrush("StatusDangerBrush")),
 
             _ =>
-                ("Desconhecido", SymbolRegular.QuestionCircle24, Brushes.Gray)
+                (T("Unknown"), SymbolRegular.QuestionCircle24, Brushes.Gray)
         };
     }
 
-    private void ApplySuggestions_Click(object sender, RoutedEventArgs e)
+    private Brush GetThemeBrush(string key)
     {
-        try { _registryService.ApplySearchBoxSuggestions(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
+        return TryFindResource(key) as Brush ?? Brushes.Gray;
     }
 
-    private void RevertSuggestions_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.RevertSearchBoxSuggestions(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void ApplySuggestions_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.ApplySearchBoxSuggestions);
 
-    private void ApplyCloud_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.ApplyCloudSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void RevertSuggestions_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.RevertSearchBoxSuggestions);
 
-    private void RevertCloud_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.RevertCloudSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void ApplyCloud_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.ApplyCloudSearch);
 
-    private void ApplyBing_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.ApplyBingSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void RevertCloud_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.RevertCloudSearch);
 
-    private void RevertBing_Click(object sender, RoutedEventArgs e)
-    {
-        try { _registryService.RevertBingSearch(); RefreshStatus(); }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    private void ApplyBing_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.ApplyBingSearch);
+
+    private void RevertBing_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.RevertBingSearch);
+
+    private void ApplyWebResults_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.ApplyWebResults);
+
+    private void RevertWebResults_Click(object sender, RoutedEventArgs e) =>
+        ExecuteRegistryOperation(_registryService.RevertWebResults);
 
     private void RestartExplorer_Click(object sender, RoutedEventArgs e)
     {
-        var result = System.Windows.MessageBox.Show(
-            "Isso irá encerrar o Windows Explorer. A barra de tarefas desaparecerá momentaneamente.\nDeseja continuar?",
-            "Confirmar Reinício",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+        RestartExplorerOverlay.Visibility = Visibility.Visible;
+    }
 
-        if (result == System.Windows.MessageBoxResult.Yes)
+    private void ConfirmRestartExplorerButton_Click(object sender, RoutedEventArgs e)
+    {
+        RestartExplorerOverlay.Visibility = Visibility.Collapsed;
+
+        try
         {
-            try
-            {
-                _registryService.RestartExplorer();
-                System.Windows.MessageBox.Show("Explorer reiniciado.", "Sucesso", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex);
-            }
+            _registryService.RestartExplorer();
+            ShowNotification(T("RestartExplorerSuccessTitle"), T("RestartExplorerSuccessMessage"), SymbolRegular.CheckmarkCircle24, GetThemeBrush("StatusSuccessBrush"));
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
         }
     }
 
-    private static void ShowError(Exception ex)
+    private void CancelRestartExplorerButton_Click(object sender, RoutedEventArgs e)
     {
-        System.Windows.MessageBox.Show($"Erro: {ex.Message}", "Erro", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        RestartExplorerOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void RestartExplorerOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        RestartExplorerOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void RestartExplorerPanel_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void SettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        SettingsOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void PortugueseButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeLanguage("pt-BR");
+    }
+
+    private void EnglishButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeLanguage("en-US");
+    }
+
+    private void CloseSettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        SettingsOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void SettingsOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        SettingsOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void SettingsPanel_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void ChangeLanguage(string cultureName)
+    {
+        _localizationService.ApplyCulture(cultureName);
+        ApplyLocalization();
+    }
+
+    private void ThemeSystemButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeTheme(AppThemePreference.System);
+    }
+
+    private void ThemeLightButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeTheme(AppThemePreference.Light);
+    }
+
+    private void ThemeDarkButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeTheme(AppThemePreference.Dark);
+    }
+
+    private void ChangeTheme(AppThemePreference preference)
+    {
+        try
+        {
+            _themeService.ChangeTheme(preference, this);
+            RefreshThemeSelection();
+            RefreshStatus();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
+        }
+    }
+
+    private void ExecuteRegistryOperation(Action operation)
+    {
+        try
+        {
+            operation();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
+        }
+        finally
+        {
+            RefreshStatus();
+        }
+    }
+
+    private void ShowError(Exception ex)
+    {
+        ShowNotification(
+            T("ErrorTitle"),
+            string.Format(CultureInfo.CurrentCulture, T("ErrorMessage"), ex.Message),
+            SymbolRegular.DismissCircle24,
+            GetThemeBrush("StatusDangerBrush"));
+    }
+
+    private void ShowNotification(string title, string message, SymbolRegular symbol, Brush iconBrush)
+    {
+        NotificationTitleText.Text = title;
+        NotificationMessageText.Text = message;
+        NotificationIcon.Symbol = symbol;
+        NotificationIcon.Foreground = iconBrush;
+        NotificationCloseButton.Content = T("Close");
+        NotificationOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void NotificationOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        NotificationOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void NotificationPanel_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void NotificationCloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        NotificationOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private string T(string key) => _localizationService.GetString(key);
+
+    protected override void OnClosed(EventArgs e)
+    {
+        Loaded -= MainWindow_Loaded;
+        _themeService.ThemeApplied -= ThemeService_ThemeApplied;
+        _themeService.Dispose();
+
+        base.OnClosed(e);
     }
 }
