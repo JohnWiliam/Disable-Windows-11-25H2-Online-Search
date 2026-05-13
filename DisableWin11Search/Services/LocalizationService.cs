@@ -42,8 +42,21 @@ public sealed class LocalizationService
 
         if (save)
         {
+            SaveCulture(normalizedCultureName);
+        }
+    }
+
+    private static void SaveCulture(string cultureName)
+    {
+        try
+        {
             using var key = Registry.CurrentUser.CreateSubKey(SettingsKeyPath);
-            key?.SetValue(LanguageValueName, normalizedCultureName, RegistryValueKind.String);
+            key?.SetValue(LanguageValueName, cultureName, RegistryValueKind.String);
+        }
+        catch
+        {
+            // Language persistence is best-effort; the selected culture is still applied
+            // for the current process even when the settings key cannot be updated.
         }
     }
 

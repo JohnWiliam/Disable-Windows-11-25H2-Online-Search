@@ -23,6 +23,7 @@ public partial class MainWindow : FluentWindow
         _themeService.Apply(this);
 
         Loaded += MainWindow_Loaded;
+        Closed += MainWindow_Closed;
     }
 
     private void ThemeService_ThemeApplied(object? sender, EventArgs e)
@@ -35,8 +36,16 @@ public partial class MainWindow : FluentWindow
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        Loaded -= MainWindow_Loaded;
         ApplyLocalization();
         RefreshStatus();
+    }
+
+    private void MainWindow_Closed(object? sender, EventArgs e)
+    {
+        Closed -= MainWindow_Closed;
+        _themeService.ThemeApplied -= ThemeService_ThemeApplied;
+        _themeService.Dispose();
     }
 
     private void ApplyLocalization()
@@ -97,15 +106,24 @@ public partial class MainWindow : FluentWindow
     private void RefreshLanguageSelection()
     {
         var isPortuguese = _localizationService.CurrentCulture.Name.Equals("pt-BR", StringComparison.OrdinalIgnoreCase);
-        PortugueseButton.Appearance = isPortuguese ? ControlAppearance.Primary : ControlAppearance.Secondary;
-        EnglishButton.Appearance = isPortuguese ? ControlAppearance.Secondary : ControlAppearance.Primary;
+        UpdateSelectionButton(PortugueseButton, isPortuguese);
+        UpdateSelectionButton(EnglishButton, !isPortuguese);
     }
 
     private void RefreshThemeSelection()
     {
-        ThemeSystemButton.Appearance = _themeService.CurrentPreference == AppThemePreference.System ? ControlAppearance.Primary : ControlAppearance.Secondary;
-        ThemeLightButton.Appearance = _themeService.CurrentPreference == AppThemePreference.Light ? ControlAppearance.Primary : ControlAppearance.Secondary;
-        ThemeDarkButton.Appearance = _themeService.CurrentPreference == AppThemePreference.Dark ? ControlAppearance.Primary : ControlAppearance.Secondary;
+        UpdateSelectionButton(ThemeSystemButton, _themeService.CurrentPreference == AppThemePreference.System);
+        UpdateSelectionButton(ThemeLightButton, _themeService.CurrentPreference == AppThemePreference.Light);
+        UpdateSelectionButton(ThemeDarkButton, _themeService.CurrentPreference == AppThemePreference.Dark);
+    }
+
+    private static void UpdateSelectionButton(Wpf.Ui.Controls.Button button, bool selected)
+    {
+        button.Appearance = selected ? ControlAppearance.Primary : ControlAppearance.Secondary;
+        button.Icon = new SymbolIcon
+        {
+            Symbol = selected ? SymbolRegular.CheckmarkCircle20 : SymbolRegular.Circle20
+        };
     }
 
     private void RefreshStatus()

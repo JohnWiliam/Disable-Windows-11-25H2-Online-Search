@@ -42,7 +42,7 @@ public class RegistryService
             var hasLegacyUserValue = IsDWordValue(userKey, "DisableCloudSearch", 1);
             var hasPolicyValue = IsDWordValue(policyKey, "AllowCloudSearch", 0);
 
-            return hasLegacyUserValue || hasPolicyValue
+            return hasLegacyUserValue && hasPolicyValue
                 ? OptimizationStatus.Optimized
                 : OptimizationStatus.NotOptimized;
         }
@@ -121,7 +121,7 @@ public class RegistryService
 
         if (File.Exists(explorerPath))
         {
-            Process.Start(new ProcessStartInfo
+            using var startedProcess = Process.Start(new ProcessStartInfo
             {
                 FileName = explorerPath,
                 UseShellExecute = false
